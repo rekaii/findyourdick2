@@ -22,6 +22,40 @@
       overflow-x: hidden;
     }
 
+    /* Стили для экрана загрузки */
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #ffffff;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      font-size: 24px;
+      color: #333;
+      font-weight: bold;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .game-container {
       display: flex;
       flex-direction: column;
@@ -189,6 +223,12 @@
   </style>
 </head>
 <body>
+
+  <!-- Экран загрузки -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div id="loader-text">Загрузка ресурсов... 0%</div>
+  </div>
 
   <div class="game-container">
     <img id="scene" class="main-frame" src="startpage.jpg" alt="Сцена">
@@ -401,7 +441,67 @@
     const buttonsContainer = document.getElementById('buttons');
     const creditsContainer = document.getElementById('credits-container');
     const creditsContent = document.getElementById('credits-content');
+    const loader = document.getElementById('loader');
+    const loaderText = document.getElementById('loader-text');
     let isTransitioning = false;
+
+    // Функция предварительной загрузки абсолютно всех файлов
+    function preloadAssets() {
+      // Собираем уникальные картинки из дерева сюжета + стартовую
+      const imagesSet = new Set(['startpage.jpg']);
+      for (let key in storyTree) {
+        imagesSet.add(key);
+        storyTree[key].forEach(choice => {
+          if (choice.img) imagesSet.add(choice.img);
+        });
+      }
+
+      const imageUrls = Array.from(imagesSet);
+      const audioFiles = [
+        bgMusic, bathSound, knockSound, tvSound,
+        voice1, voice2, voice3, voice4, voice5,
+        margoldinSound, shotSound, knifeSound, winSound
+      ];
+
+      let loadedCount = 0;
+      const totalItems = imageUrls.length + audioFiles.length;
+
+      function updateProgress() {
+        loadedCount++;
+        const percent = Math.floor((loadedCount / totalItems) * 100);
+        loaderText.textContent = `Загрузка ресурсов... ${percent}%`;
+
+        if (loadedCount >= totalItems) {
+          loader.style.opacity = '0';
+          setTimeout(() => {
+            loader.style.display = 'none';
+            transitionTo('startpage.jpg');
+          }, 500);
+        }
+      }
+
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        img.onload = updateProgress;
+        img.onerror = updateProgress;
+      });
+
+      audioFiles.forEach(audio => {
+        audio.preload = 'auto';
+        audio.load();
+        audio.oncanplaythrough = () => {
+          audio.oncanplaythrough = null;
+          updateProgress();
+        };
+        setTimeout(() => {
+          if (audio.oncanplaythrough) {
+            audio.oncanplaythrough = null;
+            updateProgress();
+          }
+        }, 1500);
+      });
+    }
 
     function transitionTo(imageName) {
       if (isTransitioning) return;
@@ -455,7 +555,7 @@
                   }).catch(e => {});
                 };
               }).catch(e => {});
-          };
+            };
           }).catch(e => {});
         }
 
@@ -518,10 +618,10 @@
                     tvSound.pause();
                     tvSound.currentTime = 0;
                     transitionTo(choice.next);
+                  });
                 });
-              });
-              return;
-            }
+                return;
+              }
 
               if (choice.fadeTv) {
                 voice1.pause(); voice1.currentTime = 0;
@@ -531,18 +631,18 @@
                 voice5.pause(); voice5.currentTime = 0;
                 fadeOutAudio(tvSound, 500, () => {
                 transitionTo(choice.next);
-              });
-              return;
-            }
+                });
+                return;
+              }
 
               if (choice.shake) {
                 sceneImg.classList.add('shake-hard');
-            }
+              }
 
               if (choice.sound) {
                 shotSound.currentTime = 0;
                 shotSound.play().catch(e => {});
-            }
+              }
 
               if (choice.resetGame) {
                 bgMusic.pause();
@@ -560,41 +660,41 @@
                 voice4.pause(); voice4.currentTime = 0;
                 voice5.pause(); voice5.currentTime = 0;
                 margoldinSound.pause(); margoldinSound.currentTime = 0;
-            }
+              }
 
               transitionTo(choice.next);
             };
             buttonsContainer.appendChild(btn);
           });
-      }
+        }
 
-      sceneImg.classList.remove('fade-out');
-      buttonsContainer.classList.remove('fade-out');
+        sceneImg.classList.remove('fade-out');
+        buttonsContainer.classList.remove('fade-out');
 
-      if (imageName === '31.jpg') {
-        setTimeout(() => {
-          isTransitioning = false;
-          transitionTo('32.jpg');
-        }, 2000);
-      } else if (imageName === '22.jpg' || imageName === '33.jpg') {
-        setTimeout(() => {
-          creditsContainer.style.display = 'flex';
+        if (imageName === '31.jpg') {
           setTimeout(() => {
-            creditsContainer.classList.add('visible');
-            creditsContent.classList.add('active');
-          }, 50);
-        }, 800);
-        isTransitioning = false;
-      } else {
-        setTimeout(() => {
+            isTransitioning = false;
+            transitionTo('32.jpg');
+          }, 2000);
+        } else if (imageName === '22.jpg' || imageName === '33.jpg') {
+          setTimeout(() => {
+            creditsContainer.style.display = 'flex';
+            setTimeout(() => {
+              creditsContainer.classList.add('visible');
+              creditsContent.classList.add('active');
+            }, 50);
+          }, 800);
           isTransitioning = false;
-        }, 400);
-      }
+        } else {
+          setTimeout(() => {
+            isTransitioning = false;
+          }, 400);
+        }
 
-    }, 400);
-  }
+      }, 400);
+    }
 
-    transitionTo('startpage.jpg');
+    preloadAssets();
   </script>
 
 </body>
