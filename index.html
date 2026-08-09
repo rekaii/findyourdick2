@@ -274,6 +274,7 @@
     const shotSound = new Audio('выстрел.mp3');
     const knifeSound = new Audio('нож.mp3');
     const winSound = new Audio('победа.mp3');
+    const glassSound = new Audio('стеклоразбилось.mp3'); // Звук разбитого стекла
 
     function fadeOutAudio(audio, duration = 500, callback) {
       if (!audio || audio.paused) {
@@ -447,7 +448,6 @@
 
     // Функция предварительной загрузки абсолютно всех файлов
     function preloadAssets() {
-      // Собираем уникальные картинки из дерева сюжета + стартовую
       const imagesSet = new Set(['startpage.jpg']);
       for (let key in storyTree) {
         imagesSet.add(key);
@@ -460,7 +460,7 @@
       const audioFiles = [
         bgMusic, bathSound, knockSound, tvSound,
         voice1, voice2, voice3, voice4, voice5,
-        margoldinSound, shotSound, knifeSound, winSound
+        margoldinSound, shotSound, knifeSound, winSound, glassSound
       ];
 
       let loadedCount = 0;
@@ -530,6 +530,12 @@
           knockSound.volume = 1;
           knockSound.currentTime = 0;
           knockSound.play().catch(e => {});
+        }
+
+        // Звук разбитого стекла при переходе на 26.jpg (срабатывает 1 раз)
+        if (imageName === '26.jpg') {
+          glassSound.currentTime = 0;
+          glassSound.play().catch(e => {});
         }
 
         if (imageName === '25.jpg') {
