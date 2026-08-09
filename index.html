@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Поиск члена 2</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      max-width: 95vw;
+      padding: 20px 0;
+      position: relative;
+    }
+
+    .main-frame {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      opacity: 1;
+      transition: opacity 0.4s ease-in-out;
+    }
+
+    .main-frame.fade-out {
+      opacity: 0;
+    }
+
+    #credits-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0);
+      z-index: 1000;
+      overflow: hidden;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+      color: #ffffff;
+      text-align: center;
+      font-family: sans-serif;
+      transition: background-color 2s ease-in-out;
+    }
+
+    #credits-container.visible {
+      background-color: rgba(0, 0, 0, 0.95);
+    }
+
+    .credits-content {
+      position: absolute;
+      width: 100%;
+      top: 100%;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      animation: scrollCredits 20s linear forwards;
+      padding-bottom: 50px;
+    }
+
+    .credits-content.active {
+      opacity: 1;
+    }
+
+    .credits-content h2 {
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: #ffcc00;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .credits-content p {
+      font-size: 22px;
+      margin: 15px 0;
+      line-height: 1.5;
+    }
+
+    .margoldin-credit {
+      margin-top: 45vh;
+      color: #00ffff;
+    }
+
+    @keyframes scrollCredits {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-220vh);
+      }
+    }
+
+    @keyframes screenShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-6px, 4px) rotate(-1deg); }
+      40% { transform: translate(6px, -4px) rotate(1deg); }
+      60% { transform: translate(-4px, -2px) rotate(0deg); }
+      80% { transform: translate(4px, 2px) rotate(1deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    @keyframes originalShakeWithPause {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+
+      2%  { transform: translate(-5px, 3px) scale(1.02); }
+      4%  { transform: translate(5px, -3px) scale(1.02); }
+      6%  { transform: translate(-4px, -2px) scale(1.01); }
+      8%  { transform: translate(4px, 2px) scale(1.01); }
+      10% { transform: translate(-6px, 4px) scale(1.025); }
+      12% { transform: translate(6px, -4px) scale(1.025); }
+      14% { transform: translate(-3px, -2px) scale(1.01); }
+      16% { transform: translate(3px, 2px) scale(1.01); }
+      18% { transform: translate(-5px, 3px) scale(1.02); }
+      20% { transform: translate(5px, -3px) scale(1.02); }
+      22% { transform: translate(-4px, -2px) scale(1.01); }
+      24% { transform: translate(4px, 2px) scale(1.01); }
+      26% { transform: translate(-6px, 4px) scale(1.025); }
+      28% { transform: translate(6px, -4px) scale(1.025); }
+      30% { transform: translate(-3px, -2px) scale(1.01); }
+      32% { transform: translate(3px, 2px) scale(1.01); }
+      34% { transform: translate(-4px, 2px) scale(1.01); }
+      36% { transform: translate(4px, -2px) scale(1.01); }
+      38% { transform: translate(-2px, 1px) scale(1.005); }
+      40% { transform: translate(0, 0) scale(1); }
+
+      41%, 100% { transform: translate(0, 0) scale(1); }
+    }
+
+    .shake-hard {
+      animation: screenShake 0.4s ease-in-out;
+    }
+
+    .shake-beat {
+      animation: originalShakeWithPause 5s infinite linear;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      min-height: 125px;
+      opacity: 1;
+      transition: opacity 0.4s ease-in-out;
+    }
+
+    .controls.fade-out {
+      opacity: 0;
+    }
+
+    .btn-img {
+      max-height: 105px;
+      height: auto;
+      cursor: pointer;
+      border-radius: 12px;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn-img:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    <img id="scene" class="main-frame" src="startpage.jpg" alt="Сцена">
+    <div id="buttons" class="controls"></div>
+  </div>
+
+  <div id="credits-container">
+    <div class="credits-content" id="credits-content">
+      <h2>Озвучивали:</h2>
+      <p>равиль стройняшка</p>
+      <p>льоха соплежуй</p>
+      <p>артур маньяк актобе</p>
+      <p>тилль линдеманн</p>
+      <p>нутрия золото</p>
+      <p>вова лоутаб</p>
+      <p class="margoldin-credit"><br><br><br><br>и иван марголдин тоже, кстати</p>
+    </div>
+  </div>
+
+  <script>
+    const bgMusic = new Audio('losing.m4a');
+    bgMusic.loop = true;
+
+    const bathSound = new Audio('ванная.mp3');
+    bathSound.loop = true;
+
+    const knockSound = new Audio('стуквдвери.mp3');
+    knockSound.loop = true;
+
+    const tvSound = new Audio('телевизор.m4a');
+    tvSound.loop = true;
+    tvSound.volume = 0.1;
+
+    const voice1 = new Audio('1озвучка.ogg');
+    const voice2 = new Audio('2озвучка.ogg');
+    const voice3 = new Audio('3озвучка.ogg');
+    const voice4 = new Audio('4озвучка.ogg');
+    const voice5 = new Audio('5озвучка.ogg');
+
+    const margoldinSound = new Audio('марголдин.ogg');
+    margoldinSound.volume = 1.0;
+
+    const shotSound = new Audio('выстрел.mp3');
+    const knifeSound = new Audio('нож.mp3');
+    const winSound = new Audio('победа.mp3');
+
+    function fadeOutAudio(audio, duration = 500, callback) {
+      if (!audio || audio.paused) {
+        if (callback) callback();
+        return;
+      }
+      const startVolume = audio.volume;
+      const step = startVolume / (duration / 50);
+
+      const fadeInterval = setInterval(() => {
+        if (audio.volume > step) {
+          audio.volume -= step;
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = startVolume;
+          clearInterval(fadeInterval);
+          if (callback) callback();
+        }
+      }, 50);
+    }
+
+    function fadeInAudio(audio, targetVolume = 0.8, duration = 500) {
+      audio.volume = 0;
+      audio.currentTime = 0;
+      audio.play().catch(e => {});
+
+      const step = targetVolume / (duration / 50);
+      const fadeInterval = setInterval(() => {
+        if (audio.volume < targetVolume - step) {
+          audio.volume += step;
+        } else {
+          audio.volume = targetVolume;
+          clearInterval(fadeInterval);
+        }
+      }, 50);
+    }
+
+    function changeVolumeSmoothly(audio, targetVolume, duration = 500) {
+      const actualTarget = targetVolume === 1.0 ? 0.8 : targetVolume * 0.8;
+      const startVolume = audio.volume;
+      if (startVolume === actualTarget) return;
+      const diff = actualTarget - startVolume;
+      const step = diff / (duration / 50);
+
+      const fadeInterval = setInterval(() => {
+        if ((diff > 0 && audio.volume < actualTarget - Math.abs(step)) ||
+            (diff < 0 && audio.volume > actualTarget + Math.abs(step))) {
+          audio.volume += step;
+        } else {
+          audio.volume = actualTarget;
+          clearInterval(fadeInterval);
+        }
+      }, 50);
+    }
+
+    const storyTree = {
+      'startpage.jpg': [
+        { img: 'пошпилить.jpg', next: '1.jpg', startBgMusic: true }
+      ],
+      '1.jpg': [
+        { img: 'дальшече.jpg', next: '2.jpg' }
+      ],
+      '2.jpg': [
+        { img: 'ахуеть.jpg', next: '3.jpg' }
+      ],
+      '3.jpg': [
+        { img: 'дальшече.jpg', next: '4.jpg' }
+      ],
+      '4.jpg': [
+        { img: 'памыца.jpg', next: '5.jpg', startBath: true },
+        { img: 'ванять.jpg', next: '6.jpg' }
+      ],
+      '5.jpg': [
+        { img: 'дальшече.jpg', next: '7.jpg', fadeBath: true }
+      ],
+      '6.jpg': [
+        { img: 'дальшече.jpg', next: '8.jpg' }
+      ],
+      '7.jpg': [
+        { img: 'дальшече.jpg', next: '8.jpg' }
+      ],
+      '8.jpg': [
+        { img: 'открытьдверь.jpg', next: '9.jpg', fadeKnock: true },
+        { img: 'послать.jpg', next: '23.jpg', fadeKnock: true }
+      ],
+
+      '9.jpg': [
+        { img: 'убежать.jpg', next: '10.jpg' }
+      ],
+      '10.jpg': [
+        { img: 'дальшече.jpg', next: '11.jpg' }
+      ],
+      '11.jpg': [
+        { img: 'взятьбилет.jpg', next: '12.jpg' },
+        { img: 'взятьнож.jpg', next: '16.jpg' }
+      ],
+
+      '12.jpg': [
+        { img: 'дальшече.jpg', next: '13.jpg' }
+      ],
+      '13.jpg': [
+        { img: 'дальшече.jpg', next: '14.jpg' }
+      ],
+      '14.jpg': [
+        { img: 'дальшече.jpg', next: '15.jpg' }
+      ],
+      '15.jpg': [
+        { img: 'пиздец.jpg', next: 'startpage.jpg', resetGame: true, fadeMargoldin: true }
+      ],
+
+      '16.jpg': [
+        { img: 'отхуярить.jpg', next: '17.jpg' }
+      ],
+      '17.jpg': [
+        { img: 'дальшече.jpg', next: '18.jpg' }
+      ],
+      '18.jpg': [
+        { img: 'дальшече.jpg', next: '19.jpg' }
+      ],
+      '19.jpg': [
+        { img: 'убить.jpg', next: '20.jpg' }
+      ],
+      '20.jpg': [
+        { img: 'ахуеть.jpg', next: '21.jpg' }
+      ],
+      '21.jpg': [
+        { img: 'славабогу.jpg', next: '22.jpg' }
+      ],
+      '22.jpg': [],
+
+      '23.jpg': [
+        { img: 'уйтивгостинную.jpg', next: '24.jpg' }
+      ],
+      '24.jpg': [
+        { img: 'смотретьтелек.jpg', next: '25.jpg' }
+      ],
+      '25.jpg': [
+        { img: 'дальшече.jpg', next: '26.jpg', fadeTv: true }
+      ],
+      '26.jpg': [
+        { img: 'дальшече.jpg', next: '27.jpg' }
+      ],
+      '27.jpg': [
+        { img: 'дальшече.jpg', next: '28.jpg' }
+      ],
+      '28.jpg': [
+        { img: 'дальшече.jpg', next: '29.jpg' }
+      ],
+      '29.jpg': [
+        { img: 'ахуеть.jpg', next: '30.jpg' }
+      ],
+      '30.jpg': [
+        { img: 'затулить.jpg', next: '31.jpg', sound: true, shake: true }
+      ],
+      '31.jpg': [],
+      '32.jpg': [
+        { img: 'дальшече.jpg', next: '33.jpg' }
+      ],
+      '33.jpg': []
+    };
+
+    const sceneImg = document.getElementById('scene');
+    const buttonsContainer = document.getElementById('buttons');
+    const creditsContainer = document.getElementById('credits-container');
+    const creditsContent = document.getElementById('credits-content');
+    let isTransitioning = false;
+
+    function transitionTo(imageName) {
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      sceneImg.classList.add('fade-out');
+      buttonsContainer.classList.add('fade-out');
+
+      setTimeout(() => {
+        sceneImg.src = imageName;
+        buttonsContainer.innerHTML = '';
+
+        sceneImg.classList.remove('shake-beat', 'shake-hard');
+
+        if (imageName === '8.jpg') {
+          sceneImg.classList.add('shake-beat');
+        }
+
+        if (imageName === '25.jpg') {
+          changeVolumeSmoothly(bgMusic, 0.5, 400);
+        } else {
+          changeVolumeSmoothly(bgMusic, 1.0, 400);
+        }
+
+        if (imageName === '8.jpg') {
+          knockSound.volume = 1;
+          knockSound.currentTime = 0;
+          knockSound.play().catch(e => {});
+        }
+
+        if (imageName === '25.jpg') {
+          fadeInAudio(tvSound, 1, 500);
+
+          voice1.currentTime = 0;
+          voice1.play().then(() => {
+            voice1.onended = () => {
+              voice2.currentTime = 0;
+              voice2.play().then(() => {
+                voice2.onended = () => {
+                  voice3.currentTime = 0;
+                  voice3.play().then(() => {
+                    voice3.onended = () => {
+                      voice4.currentTime = 0;
+                      voice4.play().then(() => {
+                        voice4.onended = () => {
+                          voice5.currentTime = 0;
+                          voice5.play().catch(e => {});
+                        };
+                      }).catch(e => {});
+                    };
+                  }).catch(e => {});
+                };
+              }).catch(e => {});
+          };
+          }).catch(e => {});
+        }
+
+        if (imageName === '15.jpg') {
+          margoldinSound.volume = 1.0;
+          margoldinSound.currentTime = 0;
+          margoldinSound.play().catch(e => {});
+          
+          margoldinSound.onended = () => {
+            fadeOutAudio(margoldinSound, 500);
+          };
+        }
+
+        if (imageName === '20.jpg') {
+          knifeSound.currentTime = 0;
+          knifeSound.play().catch(e => {});
+        }
+
+        if (imageName === '21.jpg' || imageName === '32.jpg') {
+          winSound.currentTime = 0;
+          winSound.play().catch(e => {});
+        }
+
+        const choices = storyTree[imageName];
+        if (choices && choices.length > 0) {
+          choices.forEach(choice => {
+            const btn = document.createElement('img');
+            btn.src = choice.img;
+            btn.className = 'btn-img';
+            btn.onclick = () => {
+              if (choice.startBgMusic) {
+                bgMusic.currentTime = 0;
+                bgMusic.volume = 0.8;
+                bgMusic.play().catch(e => {});
+              }
+
+              if (choice.startBath) {
+                bathSound.volume = 1;
+                bathSound.currentTime = 0;
+                bathSound.play().catch(e => {});
+              }
+
+              if (choice.fadeBath) {
+                fadeOutAudio(bathSound, 500);
+              }
+
+              if (choice.fadeKnock) {
+                fadeOutAudio(knockSound, 500);
+              }
+
+              if (choice.fadeMargoldin) {
+                fadeOutAudio(margoldinSound, 500, () => {
+                  fadeOutAudio(bgMusic, 500, () => {
+                    bgMusic.pause();
+                    bgMusic.currentTime = 0;
+                    bathSound.pause();
+                    bathSound.currentTime = 0;
+                    knockSound.pause();
+                    knockSound.currentTime = 0;
+                    tvSound.pause();
+                    tvSound.currentTime = 0;
+                    transitionTo(choice.next);
+                });
+              });
+              return;
+            }
+
+              if (choice.fadeTv) {
+                voice1.pause(); voice1.currentTime = 0;
+                voice2.pause(); voice2.currentTime = 0;
+                voice3.pause(); voice3.currentTime = 0;
+                voice4.pause(); voice4.currentTime = 0;
+                voice5.pause(); voice5.currentTime = 0;
+                fadeOutAudio(tvSound, 500, () => {
+                transitionTo(choice.next);
+              });
+              return;
+            }
+
+              if (choice.shake) {
+                sceneImg.classList.add('shake-hard');
+            }
+
+              if (choice.sound) {
+                shotSound.currentTime = 0;
+                shotSound.play().catch(e => {});
+            }
+
+              if (choice.resetGame) {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                bgMusic.volume = 0.8;
+                bathSound.pause();
+                bathSound.currentTime = 0;
+                knockSound.pause();
+                knockSound.currentTime = 0;
+                tvSound.pause();
+                tvSound.currentTime = 0;
+                voice1.pause(); voice1.currentTime = 0;
+                voice2.pause(); voice2.currentTime = 0;
+                voice3.pause(); voice3.currentTime = 0;
+                voice4.pause(); voice4.currentTime = 0;
+                voice5.pause(); voice5.currentTime = 0;
+                margoldinSound.pause(); margoldinSound.currentTime = 0;
+            }
+
+              transitionTo(choice.next);
+            };
+            buttonsContainer.appendChild(btn);
+          });
+      }
+
+      sceneImg.classList.remove('fade-out');
+      buttonsContainer.classList.remove('fade-out');
+
+      if (imageName === '31.jpg') {
+        setTimeout(() => {
+          isTransitioning = false;
+          transitionTo('32.jpg');
+        }, 2000);
+      } else if (imageName === '22.jpg' || imageName === '33.jpg') {
+        setTimeout(() => {
+          creditsContainer.style.display = 'flex';
+          setTimeout(() => {
+            creditsContainer.classList.add('visible');
+            creditsContent.classList.add('active');
+          }, 50);
+        }, 800);
+        isTransitioning = false;
+      } else {
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 400);
+      }
+
+    }, 400);
+  }
+
+    transitionTo('startpage.jpg');
+  </script>
+
+</body>
+</html>
