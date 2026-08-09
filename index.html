@@ -22,7 +22,6 @@
       overflow-x: hidden;
     }
 
-    /* Стили для экрана загрузки */
     #loader {
       position: fixed;
       top: 0;
@@ -274,7 +273,18 @@
     const shotSound = new Audio('выстрел.mp3');
     const knifeSound = new Audio('нож.mp3');
     const winSound = new Audio('победа.mp3');
-    const glassSound = new Audio('стеклоразбилось.mp3'); // Звук разбитого стекла
+    const glassSound = new Audio('стеклоразбилось.mp3');
+
+    // Новые звуки
+    const reloadSound = new Audio('reload.mp3');
+    const uzastekSound = new Audio('ужастек.mp3');
+    const zambakSound = new Audio('замбак.mp3');
+    const stepsSound = new Audio('шаги.mp3');
+    const runSound = new Audio('бег.mp3');
+    runSound.loop = true;
+    const fellSound = new Audio('упал.mp3');
+    const flySound = new Audio('муха.mp3');
+    flySound.loop = true;
 
     function fadeOutAudio(audio, duration = 500, callback) {
       if (!audio || audio.paused) {
@@ -446,7 +456,6 @@
     const loaderText = document.getElementById('loader-text');
     let isTransitioning = false;
 
-    // Функция предварительной загрузки абсолютно всех файлов
     function preloadAssets() {
       const imagesSet = new Set(['startpage.jpg']);
       for (let key in storyTree) {
@@ -460,7 +469,8 @@
       const audioFiles = [
         bgMusic, bathSound, knockSound, tvSound,
         voice1, voice2, voice3, voice4, voice5,
-        margoldinSound, shotSound, knifeSound, winSound, glassSound
+        margoldinSound, shotSound, knifeSound, winSound, glassSound,
+        reloadSound, uzastekSound, zambakSound, stepsSound, runSound, fellSound, flySound
       ];
 
       let loadedCount = 0;
@@ -510,6 +520,14 @@
       sceneImg.classList.add('fade-out');
       buttonsContainer.classList.add('fade-out');
 
+      // Убираем циклические звуки при уходе со специфичных сцен
+      if (imageName !== '10.jpg') {
+        fadeOutAudio(runSound, 400);
+      }
+      if (imageName !== '6.jpg') {
+        fadeOutAudio(flySound, 400);
+      }
+
       setTimeout(() => {
         sceneImg.src = imageName;
         buttonsContainer.innerHTML = '';
@@ -532,13 +550,46 @@
           knockSound.play().catch(e => {});
         }
 
-        // Звук разбитого стекла при переходе на 26.jpg (срабатывает 1 раз)
         if (imageName === '26.jpg') {
           glassSound.currentTime = 0;
           glassSound.play().catch(e => {});
         }
 
+        // --- Новые звуковые триггеры по сценам ---
+        
+        // замбак.mp3 1 раз на 2.jpg
+        if (imageName === '2.jpg') {
+          zambakSound.currentTime = 0;
+          zambakSound.play().catch(e => {});
+        }
+
+        // шаги.mp3 1 раз на 3.jpg, 6.jpg, 7.jpg, 24.jpg
+        if (['3.jpg', '6.jpg', '7.jpg', '24.jpg'].includes(imageName)) {
+          stepsSound.currentTime = 0;
+          stepsSound.play().catch(e => {});
+        }
+
+        // муха.mp3 циклично на 6.jpg
+        if (imageName === '6.jpg') {
+          fadeInAudio(flySound, 0.7, 400);
+        }
+
+        // бег.mp3 циклично с плавной громкостью на 10.jpg
+        if (imageName === '10.jpg') {
+          fadeInAudio(runSound, 0.8, 500);
+        }
+
+        // упал.mp3 1 раз на 11.jpg
+        if (imageName === '11.jpg') {
+          fellSound.currentTime = 0;
+          fellSound.play().catch(e => {});
+        }
+
         if (imageName === '25.jpg') {
+          // ужастек.mp3 разок с самого начала показа 25.jpg (не мешая другим)
+          uzastekSound.currentTime = 0;
+          uzastekSound.play().catch(e => {});
+
           fadeInAudio(tvSound, 1, 500);
 
           voice1.currentTime = 0;
@@ -563,6 +614,12 @@
               }).catch(e => {});
             };
           }).catch(e => {});
+        }
+
+        // reload.mp3 1 раз во время показа 30.jpg
+        if (imageName === '30.jpg') {
+          reloadSound.currentTime = 0;
+          reloadSound.play().catch(e => {});
         }
 
         if (imageName === '15.jpg') {
@@ -613,6 +670,9 @@
               }
 
               if (choice.fadeMargoldin) {
+                fadeOutAudio(reloadSound, 300);
+                fadeOutAudio(runSound, 300);
+                fadeOutAudio(flySound, 300);
                 fadeOutAudio(margoldinSound, 500, () => {
                   fadeOutAudio(bgMusic, 500, () => {
                     bgMusic.pause();
@@ -666,6 +726,8 @@
                 voice4.pause(); voice4.currentTime = 0;
                 voice5.pause(); voice5.currentTime = 0;
                 margoldinSound.pause(); margoldinSound.currentTime = 0;
+                runSound.pause(); runSound.currentTime = 0;
+                flySound.pause(); flySound.currentTime = 0;
               }
 
               transitionTo(choice.next);
