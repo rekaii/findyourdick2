@@ -527,10 +527,16 @@
         fadeOutAudio(flySound, 400);
       }
 
-      // Строго останавливаем шаги, если мы не на разрешенных кадрах
+      // Строго останавливаем шаги вне разрешенных кадров
       if (!['3.jpg', '6.jpg', '7.jpg', '24.jpg'].includes(imageName)) {
         stepsSound.pause();
         stepsSound.currentTime = 0;
+      }
+
+      // Строго останавливаем замбак вне кадра 2.jpg
+      if (imageName !== '2.jpg') {
+        zambakSound.pause();
+        zambakSound.currentTime = 0;
       }
 
       setTimeout(() => {
@@ -565,7 +571,6 @@
           zambakSound.play().catch(e => {});
         }
 
-        // шаги.mp3 строго только на этих кадрах
         if (['3.jpg', '6.jpg', '7.jpg', '24.jpg'].includes(imageName)) {
           stepsSound.currentTime = 0;
           stepsSound.play().catch(e => {});
@@ -670,8 +675,8 @@
                 fadeOutAudio(reloadSound, 300);
                 fadeOutAudio(runSound, 300);
                 fadeOutAudio(flySound, 300);
-                stepsSound.pause();
-                stepsSound.currentTime = 0;
+                stepsSound.pause(); stepsSound.currentTime = 0;
+                zambakSound.pause(); zambakSound.currentTime = 0;
                 fadeOutAudio(margoldinSound, 500, () => {
                   fadeOutAudio(bgMusic, 500, () => {
                     bgMusic.pause();
@@ -728,6 +733,7 @@
                 runSound.pause(); runSound.currentTime = 0;
                 flySound.pause(); flySound.currentTime = 0;
                 stepsSound.pause(); stepsSound.currentTime = 0;
+                zambakSound.pause(); zambakSound.currentTime = 0;
               }
 
               transitionTo(choice.next);
